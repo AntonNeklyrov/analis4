@@ -1,8 +1,5 @@
 let size = 0;
 
-let maxCount = 0;
-
-let array = [];
 
 const $random = document.querySelector('#random');
 
@@ -22,7 +19,9 @@ const makeElement = (tag, className, childrens = []) => {
 
   el.className = className;
 
+
   el.append(...childrens);
+
 
   return el;
 
@@ -64,37 +63,24 @@ $random.addEventListener('click', () => {
 
   const count = parseInt($inputsCount.value);
 
-  if (count > maxCount) {
+  for (let i = 0; i < count; i++) {
+    const inputs = createElements(count, makeInput);
 
-    maxCount = count;
+    let $label = document.createElement("label");
 
+    size++;
+
+    const $row = makeElement('div', 'mb-2', inputs);
+
+    $inputsContainer.append($row);
   }
-
-  const inputs = createElements(count, makeInput);
-
-  let $label = document.createElement("label");
-
-  if (count !== 0) {
-
-    $label.innerText = "G-(" + (size + 1) + ") = ";
-
-  } else {
-
-    $label.innerText = "G-(" + (size + 1) + ") = {нет вершин}";
-
-  }
-
-  size++;
-
-  const $row = makeElement('div', 'mb-2', inputs);
-
-  $inputsContainer.append($label, $row);
-
 });
 
 const getArray = () => {
 
+
   let arr1 = [];
+  let array = [];
 
   const $mb2 = document.querySelectorAll('.mb-2');
 
@@ -114,429 +100,118 @@ const getArray = () => {
 
   }
 
+  return array;
 }
 
 const calculat = () => {
-  getArray();
-  let matrSmej = new Array(size);
-  for (let i = 0; i < size; i++) {
-    matrSmej[i] = new Array(size);
-  }
-
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      matrSmej[i][j] = 0;
-    }
-  }
-
-  for (let i = 0; i < array.length; i++) {
-    for (let j = 0; j < array[i].length; j++) {
-      matrSmej[array[i][j] - 1][i] = 1;
-    }
-  }
-
-  let ierarhLevelMatr = [];
-  let ierarhMatr = new Array(matrSmej.length);
-  let notUsedV = matrSmej.length;
-  ierarhLevelMatr.push([]);
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    ierarhMatr[i] = new Array(matrSmej.length);
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let j = 0; j < matrSmej[i].length; j++) {
-      ierarhMatr[i][j] = 0;
-    }
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {//поиск нулевого иерархического уровня
-    for (let j = 0; j < matrSmej[i].length; j++) {
-      if (matrSmej[j][i] === 0) {
-        if (j === (matrSmej.length - 1)) {
-          ierarhLevelMatr[0].push(i);
-          notUsedV--;
-        }
-      } else break;
-    }
-  }
-
-  let flag = true;
-  ierarhLevelMatr.push([]);
-
-  for (let i = 0; i < ierarhLevelMatr[0].length; i++) {//поиск первого иерархического уровня
-    for (let j = 0; j < matrSmej.length; j++) {
-
-      flag = true;
-
-      if (matrSmej[ierarhLevelMatr[0][i]][j] === 1) {
-        for (let k = 0; k < matrSmej.length; k++) {
-          if (matrSmej[k][j] === 1 && k !== ierarhLevelMatr[0][i]) {
-            flag = false;
-            break;
-          }
-        }
-
-        if (flag === true) {
-          ierarhLevelMatr[1].push(j);
-          notUsedV--;
-        }
-
-      }
-    }
-  }
-
-  console.log(ierarhLevelMatr[1]);
-  let lastLevel = 0;
-
-  while (notUsedV !== 0) {//пока не использованы все вершины
-
-    ierarhLevelMatr.push([]);
-    lastLevel++;
-
-    for (let i = 0; i < ierarhLevelMatr[lastLevel].length; i++) { //проходим по вершинам последнего иерархического уровня
-      for (let j = 0; j < matrSmej.length; j++) {//проходим по столбцам вершина матрицы последнего иерархического уровня     j  - столбец
-        flag = false;
-        if (matrSmej[ierarhLevelMatr[lastLevel][i]][j] === 1) {//если нашли вершину смежную с матрицей последнего иерархического уровня
-          flag = true;
-          for (let k = 0; k < matrSmej.length; k++) {//проходим по строкам  k - строка
-            if (matrSmej[k][j] === 1 && k !== ierarhLevelMatr[lastLevel][i]) {//если нашли вершину из матрицы иерархических уровней
-              flag = false;
-              for (let n = 0; n < (ierarhLevelMatr.length - 1); n++) {//проходимся по строкам матрицы иерархических уровней не включая последний пустой уровень
-                for (let m = 0; m < ierarhLevelMatr[n].length; m++) {//проходимся по столбцам матрицы иерархических уровеней
-                  if (k === ierarhLevelMatr[n][m]) {//нашли в матрице иерархических уровней вершину
-                    flag = true;
-                    break;
-                  }
-                }
-                if (flag === true) {
-                  break;
-                }
-              }
-            }
-            if (flag === false) {
-              break;
-            }
-          }
-        }
-        if (flag === true) {
-          ierarhLevelMatr[lastLevel + 1].push(j);
-          notUsedV--;
-        }
-      }
-    }
-  }
-
-  let newIerarhLevelMatr = [];
-  let pos = 0;
-
-  for (let i = 0; i < ierarhLevelMatr.length; i++) {
-    for (let j = 0; j < ierarhLevelMatr[i].length; j++) {
-      newIerarhLevelMatr.push([pos++, ierarhLevelMatr[i][j]]);
-    }
-  }
-
-  let newRow = 0;
-  let newColumn = 0;
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let k = 0; k < matrSmej.length; k++) {
-      if (newIerarhLevelMatr[k][1] === i) {
-        newRow = newIerarhLevelMatr[k][0];
-        break;
-      }
-    }
-    for (let j = 0; j < matrSmej.length; j++) {
-      if (matrSmej[i][j] === 1) {
-        for (let m = 0; m < matrSmej.length; m++) {
-          if (newIerarhLevelMatr[m][1] === j) {
-            newColumn = newIerarhLevelMatr[m][0];
-            break;
-          }
-        }
-        ierarhMatr[newRow][newColumn] = 1;
-      }
-    }
-  }
-
-  let rightInc = new Array(ierarhMatr.length);
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    rightInc[i] = [];
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let j = 0; j < matrSmej.length; j++) {
-      if (ierarhMatr[i][j] === 1) {
-        rightInc[i].push(j);
-      }
-    }
-  }
-
-  let str1 = 'Иерархические уровни' + '<br>';
-
-  let sizeMatr = 1;
-  for (let i = 0; i < ierarhLevelMatr.length; i++) {
-
-    str1 += 'Уровень ' + i + '={';
-
-    if (ierarhLevelMatr[i].length === 0) {
-      str1 += '';
-    } else {
-      for (let j = 0; j < ierarhLevelMatr[i].length; j++) {
-        if (j !== ierarhLevelMatr[i].length - 1) {
-          str1 += sizeMatr + '(' + (ierarhLevelMatr[i][j] + 1) + ')' + ',';
-        } else str1 += sizeMatr + '(' + (ierarhLevelMatr[i][j] + 1) + ')';
-        sizeMatr++;
-      }
-    }
-    str1 += '}' + '<br>';
-  }
-
-  str1 += '<br>';
-  document.writeln(str1);
-
-  let str2 = 'Множество правых инциденций' + '<br>';
-
-  for (let i = 0; i < rightInc.length; i++) {
-
-    str2 += 'G+(' + (i + 1) + '(' + (newIerarhLevelMatr[i][1] + 1) + ')' + ')' + '={';
-
-    if (rightInc[i].length === 0) {
-      str2 += '';
-    } else
-      for (let j = 0; j < rightInc[i].length; j++) {
-        if (rightInc[i][j] !== undefined) {
-          if (j !== rightInc[i].length - 1) {
-            str2 += (rightInc[i][j] + 1)  + '(' + (newIerarhLevelMatr[rightInc[i][j]][1] + 1)+ ')' + ',';
-          } else str2 += (rightInc[i][j] + 1) + '(' + (newIerarhLevelMatr[rightInc[i][j]][1] + 1) + ')';
-        }
-
-      }
-
-    str2 += '}' + '<br>';
-  }
-
-  document.writeln(str2);
-  array = [];
+  let matrix = getArray();
+  let shortestMatrix = getShortestPathMatrix(matrix);
+  showShortestPathMatrix(shortestMatrix);
 }
 
 $calculation.addEventListener('click', calculat);
 
-let test = () => {
+//матрица кратчайших путей
+function getShortestPathMatrix(matrix){
+  let SPMatrix = matrix;
+  let maxV = 1000;
+  let V = SPMatrix.length
 
-  let testMatr = new Array(10);
-  for (let i = 0; i < 10; i++) {
-    testMatr[i] = new Array(10);
+  for (let i = 0; i < V; i++) {//обнуляем диагональ
+    SPMatrix[i][i] = 0;
   }
 
-
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      testMatr[i][j] = 0;
-    }
-  }
-
-  testMatr[0][1] = 1;
-  testMatr[0][6] = 1;
-  testMatr[1][2] = 1;
-  testMatr[1][3] = 1;
-  testMatr[4][3] = 1;
-  testMatr[5][2] = 1;
-  testMatr[5][3] = 1;
-  testMatr[6][1] = 1;
-  testMatr[7][5] = 1;
-  testMatr[7][6] = 1;
-  testMatr[8][1] = 1;
-  testMatr[9][4] = 1;
-  testMatr[9][6] = 1;
-  testMatr[9][7] = 1;
-  testMatr[9][8] = 1;
-
-  let matrSmej = testMatr;
-
-  let ierarhLevelMatr = [];
-  let ierarhMatr = new Array(matrSmej.length);
-  let notUsedV = matrSmej.length;
-  ierarhLevelMatr.push([]);
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    ierarhMatr[i] = new Array(matrSmej.length);
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let j = 0; j < matrSmej[i].length; j++) {
-      ierarhMatr[i][j] = 0;
-    }
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {//поиск нулевого иерархического уровня
-    for (let j = 0; j < matrSmej[i].length; j++) {
-      if (matrSmej[j][i] === 0) {
-        if (j === (matrSmej.length - 1)) {
-          ierarhLevelMatr[0].push(i);
-          notUsedV--;
-        }
-      } else break;
-    }
-  }
-
-  let flag = true;
-  ierarhLevelMatr.push([]);
-
-  for (let i = 0; i < ierarhLevelMatr[0].length; i++) {//поиск первого иерархического уровня
-    for (let j = 0; j < matrSmej.length; j++) {
-
-      flag = true;
-
-      if (matrSmej[ierarhLevelMatr[0][i]][j] === 1) {
-        for (let k = 0; k < matrSmej.length; k++) {
-          if (matrSmej[k][j] === 1 && k !== ierarhLevelMatr[0][i]) {
-            flag = false;
-            break;
-          }
-        }
-
-        if (flag === true) {
-          ierarhLevelMatr[1].push(j);
-          notUsedV--;
-        }
-
-      }
-    }
-  }
-
-  console.log(ierarhLevelMatr[1]);
-  let lastLevel = 0;
-
-  while (notUsedV !== 0) {//пока не использованы все вершины
-
-    ierarhLevelMatr.push([]);
-    lastLevel++;
-
-    for (let i = 0; i < ierarhLevelMatr[lastLevel].length; i++) { //проходим по вершинам последнего иерархического уровня
-      for (let j = 0; j < matrSmej.length; j++) {//проходим по столбцам вершина матрицы последнего иерархического уровня     j  - столбец
-        flag = false;
-        if (matrSmej[ierarhLevelMatr[lastLevel][i]][j] === 1) {//если нашли вершину смежную с матрицей последнего иерархического уровня
-          flag = true;
-          for (let k = 0; k < matrSmej.length; k++) {//проходим по строкам  k - строка
-            if (matrSmej[k][j] === 1 && k !== ierarhLevelMatr[lastLevel][i]) {//если нашли вершину из матрицы иерархических уровней
-              flag = false;
-              for (let n = 0; n < (ierarhLevelMatr.length - 1); n++) {//проходимся по строкам матрицы иерархических уровней не включая последний пустой уровень
-                for (let m = 0; m < ierarhLevelMatr[n].length; m++) {//проходимся по столбцам матрицы иерархических уровеней
-                  if (k === ierarhLevelMatr[n][m]) {//нашли в матрице иерархических уровней вершину
-                    flag = true;
-                    break;
-                  }
-                }
-                if (flag === true) {
-                  break;
-                }
-              }
-            }
-            if (flag === false) {
-              break;
-            }
-          }
-        }
-        if (flag === true) {
-          ierarhLevelMatr[lastLevel + 1].push(j);
-          notUsedV--;
+  for (let k = 0; k < V; k++) {
+    for (let i = 0; i < V; i++) {
+      for (let j = 0; j < V; j++) {
+        if (SPMatrix[i][k] && SPMatrix[k][j] && i !== j) {
+          if (SPMatrix[i][k] + SPMatrix[k][j] < SPMatrix[i][j] || SPMatrix[i][j] === 0)
+            SPMatrix[i][j] = SPMatrix[i][k] + SPMatrix[k][j];
         }
       }
     }
   }
 
-  let newIerarhLevelMatr = [];
-  let pos = 0;
-
-  for (let i = 0; i < ierarhLevelMatr.length; i++) {
-    for (let j = 0; j < ierarhLevelMatr[i].length; j++) {
-      newIerarhLevelMatr.push([pos++, ierarhLevelMatr[i][j]]);
-    }
-  }
-
-  let newRow = 0;
-  let newColumn = 0;
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let k = 0; k < matrSmej.length; k++) {
-      if (newIerarhLevelMatr[k][1] === i) {
-        newRow = newIerarhLevelMatr[k][0];
-        break;
-      }
-    }
-    for (let j = 0; j < matrSmej.length; j++) {
-      if (matrSmej[i][j] === 1) {
-        for (let m = 0; m < matrSmej.length; m++) {
-          if (newIerarhLevelMatr[m][1] === j) {
-            newColumn = newIerarhLevelMatr[m][0];
-            break;
-          }
-        }
-        ierarhMatr[newRow][newColumn] = 1;
-      }
-    }
-  }
-
-  let rightInc = new Array(ierarhMatr.length);
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    rightInc[i] = [];
-  }
-
-  for (let i = 0; i < matrSmej.length; i++) {
-    for (let j = 0; j < matrSmej.length; j++) {
-      if (ierarhMatr[i][j] === 1) {
-        rightInc[i].push(j);
-      }
-    }
-  }
-
-  let str1 = 'Иерархические уровни' + '<br>';
-
-  let sizeMatr = 1;
-  for (let i = 0; i < ierarhLevelMatr.length; i++) {
-
-    str1 += 'Уровень ' + i + '={';
-
-    if (ierarhLevelMatr[i].length === 0) {
-      str1 += '';
-    } else {
-      for (let j = 0; j < ierarhLevelMatr[i].length; j++) {
-        if (j !== ierarhLevelMatr[i].length - 1) {
-          str1 += sizeMatr + '(' + (ierarhLevelMatr[i][j] + 1) + ')' + ',';
-        } else str1 += sizeMatr + '(' + (ierarhLevelMatr[i][j] + 1) + ')';
-        sizeMatr++;
-      }
-    }
-    str1 += '}' + '<br>';
-  }
-
-  str1 += '<br>';
-  document.writeln(str1);
-
-  let str2 = 'Множество правых инциденций' + '<br>';
-
-  for (let i = 0; i < rightInc.length; i++) {
-
-    str2 += 'G+(' + (i + 1) + '(' + (newIerarhLevelMatr[i][1] + 1) + ')' + ')' + '={';
-
-    if (rightInc[i].length === 0) {
-      str2 += '';
-    } else
-      for (let j = 0; j < rightInc[i].length; j++) {
-        if (rightInc[i][j] !== undefined) {
-          if (j !== rightInc[i].length - 1) {
-            str2 += (rightInc[i][j] + 1)  + '(' + (newIerarhLevelMatr[rightInc[i][j]][1] + 1)+ ')' + ',';
-          } else str2 += (rightInc[i][j] + 1) + '(' + (newIerarhLevelMatr[rightInc[i][j]][1] + 1) + ')';
-        }
-
-      }
-
-    str2 += '}' + '<br>';
-  }
-
-  document.writeln(str2);
-
+  return SPMatrix;
 }
+
+function showShortestPathMatrix(matrix) {
+  let str = "Матрица кратчайших путей" + '<br>';
+  for(let i = 0; i < matrix.length ;i++){
+    for(let j = 0; j < matrix.length; j++){
+      if(matrix[i][j] === 0){
+        matrix[i][j] = "\u221E";
+      }
+    }
+  }
+
+  for (let i = 0; i < matrix.length; i++) {
+    str += "[";
+    for (let j = 0; j < matrix.length; j++) {
+
+      if (j !== matrix[i].length - 1) {
+        str += matrix[i][j]  + ',';
+      } else str += matrix[i][j]  + ']';
+
+    }
+    str += "<br>";
+  }
+  document.writeln(str);
+}
+
+function getR(matrix) {
+  let sum = 0;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix.length; j++) {
+      sum += matrix[i][j];
+    }
+  }
+  let m = 0.5 * sum;
+  return (m / (matrix.length - 1)) - 1;
+}
+
+function getUnevenness(matrix) {
+  let size = matrix.length;
+  let edge = getEdge(matrix);
+  let avg = 2 * edge / size;
+  let degree = getDegreeMatrix(matrix);
+  let unevenness = 0;
+
+  for (let i = 0; i < size; i++) {
+    unevenness += Math.pow(degree[i] - avg, 2);
+  }
+
+  return unevenness;
+}
+
+
+function getEdge(matrix) {
+  let length = matrix.length;
+  let edge = 0;
+  for (let i = 0; i < length; i++) {
+    for (let j = 0; j < length; j++) {
+      if (matrix[i][j] === 1) {
+        edge++;
+      }
+    }
+  }
+  return edge / 2;
+}
+
+function getDegreeMatrix(matrix) {
+  let degreeMatrix = [];
+
+  for (let i = 0; i < matrix.length; i++) {
+    let degreeLength = 0;
+    for (let j = 0; j < matrix.length; j++) {
+      if (matrix[i][j] === 1) {
+        degreeLength++;
+      }
+    }
+    degreeMatrix.push(degreeLength);
+  }
+  return degreeMatrix;
+}
+
+
+
